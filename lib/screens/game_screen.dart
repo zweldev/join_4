@@ -48,19 +48,23 @@ class GameScreen extends StatelessWidget {
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    ScoreBoard(state: state),
-                    const SizedBox(height: 16),
-                    if (state.status == GameStatus.waiting)
-                      _buildWaitingState(context, state),
-                    if (state.status == GameStatus.ready)
-                      _buildReadyState(context, state),
-                    if (state.status == GameStatus.playing)
-                      Expanded(child: _buildGameBoard(context, state)),
-                    if (state.status == GameStatus.finished)
-                      Expanded(child: _buildGameOver(context, state)),
-                  ],
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  child: Column(
+                    children: [
+                      ScoreBoard(state: state),
+                      const SizedBox(height: 16),
+                      if (state.status == GameStatus.waiting)
+                        _buildWaitingState(context, state),
+                      if (state.status == GameStatus.ready)
+                        _buildReadyState(context, state),
+                      if (state.status == GameStatus.playing)
+                        Expanded(child: _buildGameBoard(context, state)),
+                      if (state.status == GameStatus.finished)
+                        Expanded(child: _buildGameOver(context, state)),
+                    ],
+                  ),
                 ),
               ),
             ),

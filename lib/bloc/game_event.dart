@@ -69,13 +69,14 @@ class RoomCreated extends GameEvent {
 }
 
 class PlayerJoined extends GameEvent {
+  final String? roomId;
   final Player player;
   final List<Player> players;
 
-  const PlayerJoined(this.player, this.players);
+  const PlayerJoined(this.roomId, this.player, this.players);
 
   @override
-  List<Object?> get props => [player, players];
+  List<Object?> get props => [roomId, player, players];
 }
 
 class OpponentJoined extends GameEvent {

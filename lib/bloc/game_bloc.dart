@@ -52,6 +52,7 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
       case 'player_joined':
         add(
           PlayerJoined(
+            message['roomId'] as String?,
             Player.fromJson(message['player'] as Map<String, dynamic>),
             (message['players'] as List<dynamic>)
                 .map((p) => Player.fromJson(p as Map<String, dynamic>))
@@ -267,6 +268,7 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
     emit(
       state.copyWith(
         status: GameStatus.ready,
+        roomId: event.roomId,
         currentPlayer: event.player,
         players: event.players,
       ),
@@ -274,7 +276,7 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
   }
 
   void _onOpponentJoined(OpponentJoined event, Emitter<GameBlocState> emit) {
-    emit(state.copyWith(players: event.players));
+    emit(state.copyWith(status: GameStatus.ready, players: event.players));
   }
 
   void _onPlayerReadyUpdate(

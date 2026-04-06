@@ -23,8 +23,7 @@ class GameBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 7 / 8,
+    return Expanded(
       child: Container(
         decoration: BoxDecoration(
           color: Colors.blue.shade800,
