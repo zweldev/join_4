@@ -7,22 +7,42 @@ import '../widgets/game_board.dart';
 import '../widgets/player_card.dart';
 import 'lobby_screen.dart';
 
-class GameScreen extends StatelessWidget {
+class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
+
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  // Guards against the navigation listener firing more than once (e.g. from
+  // residual state emissions that happen while this screen is being popped
+  // off the navigation stack). Without this guard we would end up pushing
+  // multiple LobbyScreens on top of each other.
+  bool _hasNavigatedToLobby = false;
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<GameBloc, GameBlocState>(
+      listenWhen: (prev, curr) =>
+          prev.status != curr.status || prev.errorMessage != curr.errorMessage,
       listener: (context, state) {
         if (state.errorMessage != null) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
         }
-        if (state.status == GameStatus.lobby ||
-            state.status == GameStatus.waiting && state.players.isEmpty) {
-          Navigator.of(context).pushReplacement(
+        // Navigate back to the lobby only when we have truly left the room
+        // (status is lobby or disconnected). Guard with `_hasNavigatedToLobby`
+        // so we never push more than one LobbyScreen, even if the listener
+        // fires again while this widget is being disposed.
+        if (!_hasNavigatedToLobby &&
+            (state.status == GameStatus.lobby ||
+                state.status == GameStatus.disconnected)) {
+          _hasNavigatedToLobby = true;
+          Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const LobbyScreen()),
+            (route) => false, // Clear entire stack
           );
         }
       },

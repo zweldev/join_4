@@ -188,6 +188,18 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
     ConnectToServer event,
     Emitter<GameBlocState> emit,
   ) async {
+    // If the WebSocket is already connected, do not re-emit the
+    // `connecting -> lobby` transition. That transition can re-trigger
+    // navigation listeners on screens that are still in the widget tree
+    // during a route transition (e.g. GameScreen right after LeaveRoom),
+    // causing a navigation loop where the lobby gets pushed multiple times.
+    if (_wsService.isConnected) {
+      if (state.status != GameStatus.lobby) {
+        emit(state.copyWith(status: GameStatus.lobby));
+      }
+      return;
+    }
+
     emit(state.copyWith(status: GameStatus.connecting));
     try {
       await _wsService.connect(event.serverUrl);
@@ -245,12 +257,15 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
   }
 
   void _onLeaveRoom(LeaveRoom event, Emitter<GameBlocState> emit) {
-    if (state.roomId == null || state.currentPlayer == null) return;
-    _wsService.send({
-      'event': 'leave_room',
-      'roomId': state.roomId,
-      'playerId': state.currentPlayer!.id,
-    });
+    if (state.roomId != null && state.currentPlayer != null) {
+      _wsService.send({
+        'event': 'leave_room',
+        'roomId': state.roomId,
+        'playerId': state.currentPlayer!.id,
+      });
+    }
+    // Always reset to a clean lobby state so the player can create/join
+    // a new room after leaving.
     emit(GameBlocState(status: GameStatus.lobby));
   }
 
@@ -260,6 +275,7 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
         status: GameStatus.waiting,
         roomId: event.roomId,
         currentPlayer: event.player,
+        players: [event.player],
       ),
     );
   }
@@ -351,11 +367,15 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
   }
 
   void _onPlayerLeft(PlayerLeft event, Emitter<GameBlocState> emit) {
+    // When the opponent leaves, redirect the remaining player back to the
+    // lobby as well (instead of leaving them stuck in a "waiting" state
+    // with no-one to play against). An info message is surfaced via
+    // `errorMessage` so the GameScreen listener can show a snackbar before
+    // navigating.
     emit(
-      state.copyWith(
-        status: GameStatus.waiting,
-        players: [event.remainingPlayer],
-        gameState: GameState(),
+      GameBlocState(
+        status: GameStatus.lobby,
+        errorMessage: 'Your opponent left the room',
       ),
     );
   }

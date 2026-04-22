@@ -16,6 +16,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
   final _nameController = TextEditingController();
   final _roomIdController = TextEditingController();
   bool _isCreatingRoom = true;
+  // Guards against pushing GameScreen more than once from the listener.
+  bool _hasNavigatedToGame = false;
 
   @override
   void initState() {
@@ -65,8 +67,10 @@ class _LobbyScreenState extends State<LobbyScreen> {
               context,
             ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
           }
-          if (state.status == GameStatus.waiting ||
-              state.status == GameStatus.ready) {
+          if (!_hasNavigatedToGame &&
+              (state.status == GameStatus.waiting ||
+                  state.status == GameStatus.ready)) {
+            _hasNavigatedToGame = true;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const GameScreen()),
             );
