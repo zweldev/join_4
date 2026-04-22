@@ -17,10 +17,17 @@ class Connect4App extends StatelessWidget {
       child: MaterialApp(
         title: 'Connect 4',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF161D27),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF161D27),
+          elevation: 0,
         ),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF25B18F),
+          secondary: Color(0xFFF26B70),
+        ),
+      ),
         home: const LobbyScreen(),
       ),
     );

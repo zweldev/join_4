@@ -24,103 +24,55 @@ class GameBoard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.blue.shade800,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: 7 / 6,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF324050),
+              borderRadius: BorderRadius.circular(24),
             ),
-          ],
-        ),
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          children: [
-            Expanded(
-              child: Row(
-                children: List.generate(7, (col) {
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: isGameOver || !isMyTurn
-                          ? null
-                          : () => onColumnTap(col),
-                      child: Container(
-                        margin: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade600,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.white54,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-            Expanded(
-              flex: 5,
-              child: Column(
-                children: List.generate(6, (row) {
-                  return Expanded(
-                    child: Row(
-                      children: List.generate(7, (col) {
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              children: List.generate(7, (col) {
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: isGameOver || !isMyTurn ? null : () => onColumnTap(col),
+                    behavior: HitTestBehavior.opaque,
+                    child: Column(
+                      children: List.generate(6, (row) {
                         final cell = board[row][col];
                         final isWinning = _isWinningCell(row, col);
 
+                        Color cellColor = const Color(0xFF11161D);
+                        if (cell == 'X') {
+                          cellColor = const Color(0xFFF26B70);
+                        } else if (cell == 'O') {
+                          cellColor = const Color(0xFF25B18F);
+                        }
+
                         return Expanded(
                           child: Container(
-                            margin: const EdgeInsets.all(3),
+                            margin: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: cellColor,
                               shape: BoxShape.circle,
-                              boxShadow: isWinning
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.yellow.withOpacity(0.8),
-                                        blurRadius: 10,
-                                        spreadRadius: 2,
-                                      ),
-                                    ]
+                              border: isWinning
+                                  ? Border.all(
+                                      color: Colors.white,
+                                      width: 4,
+                                    )
                                   : null,
                             ),
-                            child: cell == null
-                                ? null
-                                : Center(
-                                    child: Container(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      margin: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: cell == 'X'
-                                            ? Colors.red
-                                            : Colors.yellow,
-                                        shape: BoxShape.circle,
-                                        border: isWinning
-                                            ? Border.all(
-                                                color: Colors.green,
-                                                width: 3,
-                                              )
-                                            : null,
-                                      ),
-                                    ),
-                                  ),
                           ),
                         );
                       }),
                     ),
-                  );
-                }),
-              ),
+                  ),
+                );
+              }),
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -33,7 +33,9 @@ class PlayerCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: player.symbol == 'X' ? Colors.red : Colors.yellow,
+              color: player.symbol == 'X'
+                  ? const Color(0xFFF26B70)
+                  : const Color(0xFF25B18F),
               shape: BoxShape.circle,
             ),
             child: Center(
