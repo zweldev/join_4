@@ -111,7 +111,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                         const Connect4Logo(size: 130),
                         const SizedBox(height: 20),
                         Text(
-                          'Connect 4',
+                          'Join 4',
                           style: theme.textTheme.headlineLarge?.copyWith(
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.5,

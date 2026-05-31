@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Brand palette for Connect 4.
+/// Brand palette for Join 4.
 abstract final class AppColors {
   static const backgroundTop = Color(0xFF1B2838);
   static const backgroundBottom = Color(0xFF0A0E14);

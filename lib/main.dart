@@ -16,7 +16,7 @@ class Connect4App extends StatelessWidget {
     return BlocProvider(
       create: (_) => GameBloc(),
       child: MaterialApp(
-        title: 'Connect 4',
+        title: 'Join 4',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
         home: const LobbyScreen(),

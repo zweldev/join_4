@@ -50,7 +50,7 @@ class _GameScreenState extends State<GameScreen> {
             extendBodyBehindAppBar: true,
             appBar: AppBar(
               title: Text(
-                state.roomId != null ? 'Room ${state.roomId}' : 'Connect 4',
+                state.roomId != null ? 'Room ${state.roomId}' : 'Join 4',
               ),
               automaticallyImplyLeading: false,
               actions: [
