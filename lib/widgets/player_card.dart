@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../bloc/game_state.dart';
 import '../models/player.dart';
+import '../theme/app_theme.dart';
 
 class PlayerCard extends StatelessWidget {
   final Player player;
@@ -14,37 +15,66 @@ class PlayerCard extends StatelessWidget {
     required this.score,
   });
 
+  Color get _playerColor =>
+      player.symbol == 'X' ? AppColors.playerX : AppColors.playerO;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
+    final theme = Theme.of(context);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: isCurrentPlayer
-            ? Colors.blue.withOpacity(0.2)
-            : Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: isCurrentPlayer
-            ? Border.all(color: Colors.blue, width: 2)
+            ? _playerColor.withValues(alpha: 0.12)
+            : AppColors.surface.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isCurrentPlayer
+              ? _playerColor.withValues(alpha: 0.7)
+              : Colors.white.withValues(alpha: 0.06),
+          width: isCurrentPlayer ? 2 : 1,
+        ),
+        boxShadow: isCurrentPlayer
+            ? [
+                BoxShadow(
+                  color: _playerColor.withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
             : null,
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: player.symbol == 'X'
-                  ? const Color(0xFFF26B70)
-                  : const Color(0xFF25B18F),
               shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  player.symbol == 'X'
+                      ? AppColors.playerXLight
+                      : AppColors.playerOLight,
+                  _playerColor,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _playerColor.withValues(alpha: 0.4),
+                  blurRadius: 8,
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 player.symbol,
-                style: const TextStyle(
+                style: theme.textTheme.titleMedium?.copyWith(
                   color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
@@ -56,33 +86,35 @@ class PlayerCard extends StatelessWidget {
               children: [
                 Text(
                   player.name,
-                  style: TextStyle(
-                    fontWeight: isCurrentPlayer
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    fontSize: 16,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight:
+                        isCurrentPlayer ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
                 Text(
-                  'Score: $score',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  '$score wins',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
           if (player.isReady)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.success.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.success.withValues(alpha: 0.5)),
               ),
-              child: const Text(
+              child: Text(
                 'Ready',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -112,19 +144,30 @@ class ScoreBoard extends StatelessWidget {
               score: state.scores[playerX.id] ?? 0,
             ),
           ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.grey[800],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Text(
-            'VS',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.surfaceElevated,
+                  AppColors.surface,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: Text(
+              'VS',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 1.2,
+                  ),
+            ),
           ),
         ),
-        const SizedBox(width: 8),
         if (playerO != null)
           Expanded(
             child: PlayerCard(

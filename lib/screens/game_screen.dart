@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
+import '../theme/app_theme.dart';
 import '../widgets/game_board.dart';
 import '../widgets/player_card.dart';
 import 'lobby_screen.dart';
@@ -15,10 +17,6 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  // Guards against the navigation listener firing more than once (e.g. from
-  // residual state emissions that happen while this screen is being popped
-  // off the navigation stack). Without this guard we would end up pushing
-  // multiple LobbyScreens on top of each other.
   bool _hasNavigatedToLobby = false;
 
   @override
@@ -28,21 +26,17 @@ class _GameScreenState extends State<GameScreen> {
           prev.status != curr.status || prev.errorMessage != curr.errorMessage,
       listener: (context, state) {
         if (state.errorMessage != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.errorMessage!)),
+          );
         }
-        // Navigate back to the lobby only when we have truly left the room
-        // (status is lobby or disconnected). Guard with `_hasNavigatedToLobby`
-        // so we never push more than one LobbyScreen, even if the listener
-        // fires again while this widget is being disposed.
         if (!_hasNavigatedToLobby &&
             (state.status == GameStatus.lobby ||
                 state.status == GameStatus.disconnected)) {
           _hasNavigatedToLobby = true;
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const LobbyScreen()),
-            (route) => false, // Clear entire stack
+            (route) => false,
           );
         }
       },
@@ -50,35 +44,35 @@ class _GameScreenState extends State<GameScreen> {
         return PopScope(
           canPop: false,
           onPopInvokedWithResult: (didPop, result) {
-            if (!didPop) {
-              _showLeaveDialog(context);
-            }
+            if (!didPop) _showLeaveDialog(context);
           },
           child: Scaffold(
+            extendBodyBehindAppBar: true,
             appBar: AppBar(
-              title: Text('Room: ${state.roomId ?? ""}'),
+              title: Text(
+                state.roomId != null ? 'Room ${state.roomId}' : 'Connect 4',
+              ),
               automaticallyImplyLeading: false,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.exit_to_app),
+                  tooltip: 'Leave room',
+                  icon: const Icon(Icons.logout_rounded),
                   onPressed: () => _showLeaveDialog(context),
                 ),
               ],
             ),
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height,
-                  width: MediaQuery.of(context).size.width,
+            body: AppGradientBackground(
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: Column(
                     children: [
                       ScoreBoard(state: state),
                       const SizedBox(height: 16),
                       if (state.status == GameStatus.waiting)
-                        _buildWaitingState(context, state),
+                        Expanded(child: _buildWaitingState(context, state)),
                       if (state.status == GameStatus.ready)
-                        _buildReadyState(context, state),
+                        Expanded(child: _buildReadyState(context, state)),
                       if (state.status == GameStatus.playing)
                         Expanded(child: _buildGameBoard(context, state)),
                       if (state.status == GameStatus.finished)
@@ -95,39 +89,38 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildWaitingState(BuildContext context, GameBlocState state) {
-    return Expanded(
-      child: Center(
+    final theme = Theme.of(context);
+
+    return Center(
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(),
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                color: AppColors.accent,
+              ),
+            ),
             const SizedBox(height: 24),
             Text(
-              'Waiting for opponent...',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  const Text('Share this room ID with your friend:'),
-                  const SizedBox(height: 8),
-                  SelectableText(
-                    state.roomId ?? '',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4,
-                    ),
-                  ),
-                ],
+              'Waiting for opponent',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Share this code so they can join',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            _RoomCodeChip(roomId: state.roomId ?? ''),
           ],
         ),
       ),
@@ -135,39 +128,58 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildReadyState(BuildContext context, GameBlocState state) {
+    final theme = Theme.of(context);
     final isPlayerReady = state.currentPlayer?.isReady ?? false;
     final bothReady = state.bothPlayersReady;
 
-    return Expanded(
-      child: Center(
+    return Center(
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              bothReady ? 'Starting...' : 'Ready up!',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Icon(
+              bothReady ? Icons.rocket_launch_rounded : Icons.sports_esports_rounded,
+              size: 48,
+              color: bothReady ? AppColors.warning : AppColors.accent,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            Text(
+              bothReady ? 'Starting game…' : 'Ready up!',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
             if (!bothReady)
-              ElevatedButton(
-                onPressed: () {
-                  context.read<GameBloc>().add(const PlayerReady());
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 48,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  isPlayerReady ? 'Ready ✓' : 'Ready!',
-                  style: const TextStyle(fontSize: 20),
+              Text(
+                'Both players must tap ready',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
-            if (bothReady) const CircularProgressIndicator(),
+            const SizedBox(height: 28),
+            if (!bothReady)
+              ElevatedButton(
+                onPressed: isPlayerReady
+                    ? null
+                    : () => context.read<GameBloc>().add(const PlayerReady()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isPlayerReady ? AppColors.success : AppColors.accent,
+                  disabledBackgroundColor: AppColors.success.withValues(alpha: 0.35),
+                ),
+                child: Text(isPlayerReady ? 'You\'re ready ✓' : 'I\'m ready'),
+              ),
+            if (bothReady)
+              const SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: AppColors.accent,
+                ),
+              ),
           ],
         ),
       ),
@@ -177,36 +189,8 @@ class _GameScreenState extends State<GameScreen> {
   Widget _buildGameBoard(BuildContext context, GameBlocState state) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: state.isMyTurn
-                ? Colors.green.withOpacity(0.2)
-                : Colors.grey.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                state.isMyTurn ? Icons.circle : Icons.hourglass_empty,
-                color: state.isMyTurn ? Colors.green : Colors.grey,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                state.isMyTurn
-                    ? 'Your turn!'
-                    : '${state.opponent?.name ?? "Opponent"}\'s turn',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: state.isMyTurn ? Colors.green : Colors.grey,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
+        _TurnBanner(state: state),
+        const SizedBox(height: 12),
         GameBoard(
           board: state.gameState.board,
           winningPattern: state.gameState.winningPattern,
@@ -221,21 +205,29 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildGameOver(BuildContext context, GameBlocState state) {
+    final theme = Theme.of(context);
     final isWinner = state.gameState.winnerId == state.currentPlayer?.id;
     final isDraw = state.gameState.isDraw;
 
+    final Color accentColor;
+    final IconData icon;
     String message;
+
     if (isDraw) {
-      message = "It's a Draw!";
+      message = "It's a draw";
+      accentColor = AppColors.textSecondary;
+      icon = Icons.handshake_rounded;
     } else if (isWinner) {
-      message = 'You Won! 🎉';
+      message = 'You won!';
+      accentColor = AppColors.success;
+      icon = Icons.emoji_events_rounded;
     } else {
-      message =
-          '${state.gameState.winnerId != null ? state.opponent?.name : "Opponent"} Won!';
+      message = '${state.opponent?.name ?? 'Opponent'} won';
+      accentColor = AppColors.error;
+      icon = Icons.sentiment_dissatisfied_rounded;
     }
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GameBoard(
           board: state.gameState.board,
@@ -244,30 +236,33 @@ class _GameScreenState extends State<GameScreen> {
           isGameOver: true,
           onColumnTap: (_) {},
         ),
-        const SizedBox(height: 24),
-        Text(
-          message,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: isDraw
-                ? Colors.grey
-                : isWinner
-                ? Colors.green
-                : Colors.red,
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: accentColor.withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: accentColor, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                message,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: accentColor,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: () {
-            context.read<GameBloc>().add(const RestartGame());
-          },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text('Play Again', style: TextStyle(fontSize: 18)),
+          onPressed: () => context.read<GameBloc>().add(const RestartGame()),
+          child: const Text('Play again'),
         ),
       ],
     );
@@ -277,22 +272,136 @@ class _GameScreenState extends State<GameScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Leave Room?'),
-        content: const Text('Are you sure you want to leave this room?'),
+        title: const Text('Leave room?'),
+        content: const Text(
+          'You will return to the lobby and disconnect from this match.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: const Text('Stay'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               context.read<GameBloc>().add(const LeaveRoom());
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+            ),
             child: const Text('Leave'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TurnBanner extends StatelessWidget {
+  const _TurnBanner({required this.state});
+
+  final GameBlocState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final myTurn = state.isMyTurn;
+    final color = myTurn ? AppColors.success : AppColors.textSecondary;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: myTurn ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: color.withValues(alpha: myTurn ? 0.5 : 0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: myTurn ? AppColors.success : AppColors.textSecondary,
+              boxShadow: myTurn
+                  ? [
+                      BoxShadow(
+                        color: AppColors.success.withValues(alpha: 0.6),
+                        blurRadius: 8,
+                      ),
+                    ]
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            myTurn
+                ? 'Your turn — tap a column'
+                : "${state.opponent?.name ?? 'Opponent'}'s turn",
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: myTurn ? AppColors.textPrimary : AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoomCodeChip extends StatelessWidget {
+  const _RoomCodeChip({required this.roomId});
+
+  final String roomId;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: AppColors.backgroundBottom.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: () {
+          Clipboard.setData(ClipboardData(text: roomId));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Room ID copied')),
+          );
+        },
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.accent.withValues(alpha: 0.35),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                roomId,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 6,
+                  color: AppColors.accent,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(
+                Icons.copy_rounded,
+                size: 22,
+                color: AppColors.accent.withValues(alpha: 0.8),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
