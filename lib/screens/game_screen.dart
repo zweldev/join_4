@@ -26,9 +26,9 @@ class _GameScreenState extends State<GameScreen> {
           prev.status != curr.status || prev.errorMessage != curr.errorMessage,
       listener: (context, state) {
         if (state.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage!)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
         }
         if (!_hasNavigatedToLobby &&
             (state.status == GameStatus.lobby ||
@@ -139,7 +139,9 @@ class _GameScreenState extends State<GameScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              bothReady ? Icons.rocket_launch_rounded : Icons.sports_esports_rounded,
+              bothReady
+                  ? Icons.rocket_launch_rounded
+                  : Icons.sports_esports_rounded,
               size: 48,
               color: bothReady ? AppColors.warning : AppColors.accent,
             ),
@@ -152,12 +154,33 @@ class _GameScreenState extends State<GameScreen> {
             ),
             const SizedBox(height: 8),
             if (!bothReady)
-              Text(
-                'Both players must tap ready',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              isPlayerReady
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Waiting for another player',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'Both players must tap ready',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
             const SizedBox(height: 28),
             if (!bothReady)
               ElevatedButton(
@@ -165,9 +188,12 @@ class _GameScreenState extends State<GameScreen> {
                     ? null
                     : () => context.read<GameBloc>().add(const PlayerReady()),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isPlayerReady ? AppColors.success : AppColors.accent,
-                  disabledBackgroundColor: AppColors.success.withValues(alpha: 0.35),
+                  backgroundColor: isPlayerReady
+                      ? AppColors.success
+                      : AppColors.accent,
+                  disabledBackgroundColor: AppColors.success.withValues(
+                    alpha: 0.35,
+                  ),
                 ),
                 child: Text(isPlayerReady ? 'You\'re ready ✓' : 'I\'m ready'),
               ),
@@ -286,9 +312,7 @@ class _GameScreenState extends State<GameScreen> {
               Navigator.of(ctx).pop();
               context.read<GameBloc>().add(const LeaveRoom());
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Leave'),
           ),
         ],
@@ -314,9 +338,7 @@ class _TurnBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: myTurn ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: color.withValues(alpha: myTurn ? 0.5 : 0.2),
-        ),
+        border: Border.all(color: color.withValues(alpha: myTurn ? 0.5 : 0.2)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -368,9 +390,9 @@ class _RoomCodeChip extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Clipboard.setData(ClipboardData(text: roomId));
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Room ID copied')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Room ID copied')));
         },
         borderRadius: BorderRadius.circular(14),
         child: Container(
