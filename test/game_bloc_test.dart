@@ -64,7 +64,7 @@ void main() {
         expect(bloc.state.roomId, isNull);
         expect(bloc.state.currentPlayer, isNull);
         expect(bloc.state.players, isEmpty);
-        expect(bloc.state.errorMessage, isNull);
+        expect(bloc.state.errorMessage, 'You left the room');
 
         // Simulate the server accepting a new CreateRoom request.
         final newMe = Player(id: 'p3', name: 'Alice', symbol: 'X');
@@ -124,6 +124,26 @@ void main() {
               'The remaining player should be informed that the opponent left '
               'so the UI can show a snackbar before navigating to the lobby.',
         );
+      },
+    );
+
+    test(
+      'LeaveRoom followed by a stale PlayerLeft event does not overwrite the '
+      'local leave message',
+      () async {
+        final me = Player(id: 'p1', name: 'Alice', symbol: 'X');
+        final opponent = Player(id: 'p2', name: 'Bob', symbol: 'O');
+        bloc.add(PlayerJoined('ROOM123', me, [me, opponent]));
+        await Future<void>.delayed(Duration.zero);
+
+        bloc.add(const LeaveRoom());
+        await Future<void>.delayed(Duration.zero);
+
+        bloc.add(PlayerLeft(opponent));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(bloc.state.status, GameStatus.lobby);
+        expect(bloc.state.errorMessage, 'You left the room');
       },
     );
   });

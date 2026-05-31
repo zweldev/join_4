@@ -265,8 +265,14 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
       });
     }
     // Always reset to a clean lobby state so the player can create/join
-    // a new room after leaving.
-    emit(GameBlocState(status: GameStatus.lobby));
+    // a new room after leaving. Surface a brief info message so the
+    // leaving player also sees a toast confirmation.
+    emit(
+      GameBlocState(
+        status: GameStatus.lobby,
+        errorMessage: 'You left the room',
+      ),
+    );
   }
 
   void _onRoomCreated(RoomCreated event, Emitter<GameBlocState> emit) {
@@ -367,11 +373,13 @@ class GameBloc extends Bloc<GameEvent, GameBlocState> {
   }
 
   void _onPlayerLeft(PlayerLeft event, Emitter<GameBlocState> emit) {
-    // When the opponent leaves, redirect the remaining player back to the
-    // lobby as well (instead of leaving them stuck in a "waiting" state
-    // with no-one to play against). An info message is surfaced via
-    // `errorMessage` so the GameScreen listener can show a snackbar before
-    // navigating.
+    // Ignore late player-left events after the local player has already left
+    // and the state was reset to the lobby. This prevents the leaving player
+    // from seeing the opponent-left toast after their own leave toast.
+    if (state.status == GameStatus.lobby || state.currentPlayer == null) {
+      return;
+    }
+
     emit(
       GameBlocState(
         status: GameStatus.lobby,
