@@ -25,10 +25,7 @@ abstract final class AppColors {
 abstract final class AppTheme {
   static ThemeData get dark {
     final base = ThemeData.dark(useMaterial3: true);
-    final textTheme = GoogleFonts.outfitTextTheme(base.textTheme).apply(
-      bodyColor: AppColors.textPrimary,
-      displayColor: AppColors.textPrimary,
-    );
+    final textTheme = GoogleFonts.outfitTextTheme(base.textTheme).apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary);
 
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.backgroundBottom,
@@ -45,10 +42,7 @@ abstract final class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-        ),
+        titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.5),
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -57,10 +51,7 @@ abstract final class AppTheme {
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         hintStyle: const TextStyle(color: AppColors.textSecondary),
         prefixIconColor: AppColors.textSecondary,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Color(0xFF334155), width: 1),
@@ -77,33 +68,23 @@ abstract final class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          textStyle: textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          textStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.5),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.surfaceElevated,
-        contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
-        ),
+        backgroundColor: AppColors.surface.withValues(alpha: 0.9),
+        contentTextStyle: textTheme.bodySmall?.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        width: 360,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
-        contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: AppColors.textSecondary,
-        ),
+        titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+        contentTextStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
       ),
     );
   }
@@ -119,16 +100,7 @@ class AppGradientBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.backgroundTop,
-            AppColors.backgroundBottom,
-            Color(0xFF0F172A),
-          ],
-          stops: [0.0, 0.55, 1.0],
-        ),
+        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.backgroundTop, AppColors.backgroundBottom, Color(0xFF0F172A)], stops: [0.0, 0.55, 1.0]),
       ),
       child: child,
     );
@@ -137,11 +109,7 @@ class AppGradientBackground extends StatelessWidget {
 
 /// Frosted card container for forms and panels.
 class AppCard extends StatelessWidget {
-  const AppCard({
-    super.key,
-    required this.child,
-    this.padding = const EdgeInsets.all(24),
-  });
+  const AppCard({super.key, required this.child, this.padding = const EdgeInsets.all(24)});
 
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -153,16 +121,8 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 32,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 32, offset: const Offset(0, 16))],
       ),
       child: child,
     );
