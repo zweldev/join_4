@@ -5,6 +5,7 @@ import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/connect4_logo.dart';
+import '../config.dart';
 import 'game_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
   void initState() {
     super.initState();
     context.read<GameBloc>().add(
-      const ConnectToServer('ws://localhost:8080/ws'),
+      const ConnectToServer(kWsUrl),
     );
   }
 
@@ -94,7 +95,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 isError: true,
                 onRetry: () {
                   context.read<GameBloc>().add(
-                    const ConnectToServer('ws://localhost:8080/ws'),
+                    const ConnectToServer(kWsUrl),
                   );
                 },
               );
