@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:connect4/bloc/game_bloc.dart';
-import 'package:connect4/bloc/game_event.dart';
-import 'package:connect4/bloc/game_state.dart';
-import 'package:connect4/models/player.dart';
+import 'package:join4/bloc/game_bloc.dart';
+import 'package:join4/bloc/game_event.dart';
+import 'package:join4/bloc/game_state.dart';
+import 'package:join4/models/player.dart';
 
 void main() {
   // These tests exercise the GameBloc event handlers without opening an

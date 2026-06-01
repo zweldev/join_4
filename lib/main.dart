@@ -8,11 +8,11 @@ import 'theme/app_theme.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
-  runApp(const Connect4App());
+  runApp(const Join4App());
 }
 
-class Connect4App extends StatelessWidget {
-  const Connect4App({super.key});
+class Join4App extends StatelessWidget {
+  const Join4App({super.key});
 
   @override
   Widget build(BuildContext context) {

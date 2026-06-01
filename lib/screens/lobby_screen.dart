@@ -4,7 +4,7 @@ import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
 import '../theme/app_theme.dart';
-import '../widgets/connect4_logo.dart';
+import '../widgets/join4_logo.dart';
 import '../config.dart';
 import 'game_screen.dart';
 
@@ -109,7 +109,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     constraints: const BoxConstraints(maxWidth: 420),
                     child: Column(
                       children: [
-                        const Connect4Logo(size: 130),
+                        const Join4Logo(size: 130),
                         const SizedBox(height: 20),
                         Text(
                           'Join 4',

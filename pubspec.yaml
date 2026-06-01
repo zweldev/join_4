@@ -1,6 +1,6 @@
-name: connect4
-description: Connect4 Multiplayer Game
-publish_to: 'none'
+name: join4
+description: Join4 Multiplayer Game
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
