@@ -6,6 +6,8 @@ A realtime multiplayer Connect Four-style game built entirely with Dart.
 
 ![Join4 gameplay](demo/assets/demo_short.gif)
 
+Play the game live at https://join-four.netlify.app/
+
 ## About
 
 Join4 is a multiplayer, realtime board game where two players drop discs into a vertical grid and try to connect four in a row. Players can join an active room, watch the board update in realtime, and compete across a live WebSocket connection.
