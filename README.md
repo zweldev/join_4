@@ -1,26 +1,25 @@
-# frontend
+# Join4
 
-A new Flutter project.
+A realtime multiplayer Connect Four-style game built entirely with Dart.
 
-## Getting Started
+## Demo
 
-This project is a starting point for a Flutter application.
+![Join4 gameplay](demo/assets/demo_short.gif)
 
-A few resources to get you started if this is your first Flutter project:
+## About
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Join4 is a multiplayer, realtime board game where two players drop discs into a vertical grid and try to connect four in a row. Players can join an active room, watch the board update in realtime, and compete across a live WebSocket connection.
 
-## Deploying to Netlify (Flutter Web)
+## Architecture
 
-Set your WebSocket endpoint as an environment variable named `WS_URL` in Netlify, then build with `--dart-define` so the value is baked into the web build. Example Netlify build command:
+- Frontend: Flutter handles the UI, game board, player cards, lobby, and realtime updates.
+- Backend: Dart Frog powers the realtime game server and WebSocket communication.
 
-```bash
-flutter build web --release --dart-define=WS_URL=$WS_URL
-```
+This project uses Dart for both the client and server, making it a full-stack Dart application.
 
-On Netlify, add an environment variable `WS_URL` with the WebSocket URL (for example `wss://example.com/ws`). The app reads this value at compile time.
+## Key features
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Realtime multiplayer gameplay using WebSockets
+- Lobby and room management
+- Responsive Flutter UI for web and mobile targets
+- Shared Dart code and models for frontend/backend consistency
