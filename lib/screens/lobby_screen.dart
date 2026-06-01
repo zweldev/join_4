@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
@@ -56,6 +57,16 @@ class _LobbyScreenState extends State<LobbyScreen> {
         return;
       }
       context.read<GameBloc>().add(JoinRoom(roomId, name));
+    }
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open link')),
+      );
     }
   }
 
@@ -169,6 +180,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(height: 20),
+                        _LobbyFooter(onLinkTap: _openUrl),
                       ],
                     ),
                   ),
@@ -217,6 +230,67 @@ class _ModeToggle extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LobbyFooter extends StatelessWidget {
+  const _LobbyFooter({required this.onLinkTap});
+
+  final ValueChanged<String> onLinkTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: AppColors.textSecondary,
+          height: 1.4,
+        );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 0,
+        runSpacing: 6,
+        children: [
+          Text('Built entirely in Dart by ', style: style),
+          _FooterLink(label: 'Eden Zwel', url: 'https://x.com/edenzwel', onTap: onLinkTap),
+          Text('. Both the ', style: style),
+          _FooterLink(label: 'Frontend', url: 'https://github.com/zweldev/join_4.git', onTap: onLinkTap),
+          Text(' and ', style: style),
+          _FooterLink(label: 'Backend', url: 'https://github.com/zweldev/join_4_backend.git', onTap: onLinkTap),
+          Text(' are written in Dart. Source code available on ', style: style),
+          _FooterLink(label: 'GitHub', url: 'https://github.com/zweldev', onTap: onLinkTap),
+          Text('.', style: style),
+        ],
+      ),
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  const _FooterLink({
+    required this.label,
+    required this.url,
+    required this.onTap,
+  });
+
+  final String label;
+  final String url;
+  final ValueChanged<String> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onTap(url),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.accent,
+              decoration: TextDecoration.underline,
+            ),
       ),
     );
   }
